@@ -1,0 +1,110 @@
+beam;
+
+betxin = 425.868775236;
+betyin = betxin;
+alfxin = -1.49891475362;
+betxout = 334.695678818;
+betyout = betxout;
+alfxout = -1.56825141789;
+
+
+/* Short cell parameters */
+lq = 0.5;
+k1f = 5;
+k1d = -5;
+
+/*conversion to PT cell length and k */
+lcell0 = 2*lq;
+lcell = clight*1e-6;
+facl = lcell/lcell0;
+value, facl;
+lq = lq*facl;
+k1f = k1f/(facl^2);
+k1d = k1d/(facl^2);
+
+k1f1 := k1f;
+k1f2 := k1f;
+k1f3 := k1f;
+k1f4 := k1f;
+k1f5 := k1f;
+k1f6 := k1f;
+k1d1 := k1d;
+k1d2 := k1d;
+k1d3 := k1d;
+k1d4 := k1d;
+k1d5 := k1d;
+k1d6 := k1d;
+
+qf: quadrupole,l=lq,k1:=k1f;
+qd: quadrupole,l=lq,k1:=k1d;
+
+qf1: quadrupole,l=lq,k1:=k1f1;
+qd1: quadrupole,l=lq,k1:=k1d1;
+qf2: quadrupole,l=lq,k1:=k1f2;
+qd2: quadrupole,l=lq,k1:=k1d2;
+qf3: quadrupole,l=lq,k1:=k1f3;
+qd3: quadrupole,l=lq,k1:=k1d3;
+
+qf4: quadrupole,l=lq,k1:=k1f4;
+qd4: quadrupole,l=lq,k1:=k1d4;
+qf5: quadrupole,l=lq,k1:=k1f5;
+qd5: quadrupole,l=lq,k1:=k1d5;
+qf6: quadrupole,l=lq,k1:=k1f6;
+qd6: quadrupole,l=lq,k1:=k1d6;
+
+cell: line=(qf, qd);
+
+/*beamline: line= (qf1,qd1,qf2,qd2,qf3,qd3,qf4,qd4,qf5,qd5,qf6,qd6);*/
+beamline2: line= (qf1,qd1,qf2,qd2);
+beamline3: line= (qf1,qd1,qf2,qd2,qf3,qd3);
+beamline4: line= (qf1,qd1,qf2,qd2,qf3,qd3,qf4,qd4);
+
+beamline: line = (beamline3);
+
+use, period = cell;
+
+savebeta,label=abc,place=#s;
+
+/*select,flag=twiss,range=full,column=name,s,betx,bety;*/
+/*twiss, sequence=beamline, betx=448.426, bety=448.426, alfx = -1.489, alfy = 1.489;*/
+
+twiss;
+
+
+show, abc;
+value, k1f;
+value, k1d;
+/*twiss, beta0=abc;*/
+plot,file=optics_match, haxis=s, vaxis1=betx,bety,vmin=0, colour=100,interpolate=True;
+
+
+use, sequence=beamline;
+
+/*match,sequence=beamline,beta0=abc;*/
+match,sequence=beamline,betx=betxin, bety=betyin, alfx = alfxin, alfy = -alfxin;
+constraint,sequence=beamline,range=#e,betx=betxout,bety=betyout, alfx = alfxout, alfy=-alfxout;
+vary,name=k1f1,step=1.0e-4;
+vary,name=k1f2,step=1.0e-4;
+vary,name=k1f3,step=1.0e-4;
+vary,name=k1d1,step=1.0e-4;
+vary,name=k1d2,step=1.0e-4;
+vary,name=k1d3,step=1.0e-4;
+
+global, Q2>0.4;
+jacobian;
+/*lmdif,calls=500,tolerance=1.e-17;*/
+endmatch;
+
+/*show, abc;*/
+
+/*twiss, sequence=beamline, betx=448.426, bety=448.426, alfx = -1.495, alfy = 1.495;*/
+
+select,flag=twiss,range=full,column=name,s,betx,bety, alfx, alfy;
+/*twiss,file=twissfinal.txt, sequence=beamline,beta0=abc;*/
+twiss, file=twissfinal.txt,betx=betxin, bety=betyin,alfx=alfxin,alfy=-alfxout;
+
+
+plot,file=optics_match, haxis=s, vaxis1=betx,bety,vmin=0, colour=100,interpolate=True;
+plot,file=optics_match, haxis=s, vaxis1=alfx,alfy,vmin=0, colour=100,interpolate=True;
+
+save, sequence = beamline, file=beamline_final.txt;

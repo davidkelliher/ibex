@@ -8,8 +8,12 @@ import csv
 #Data taken March 6-8. Measure how ion signal depends on various parameters such as G2,G4 voltage and electron beam signal duration. 
 
 eV = 1.602
+<<<<<<< HEAD
 #data_dir = '/home/pvq65952/accelerators/ibex/Data'
 data_dir = '/Users/pvq65952/accelerators/ibex/Data'
+=======
+data_dir = '/home/pvq65952/accelerators/ibex/Data'
+>>>>>>> 38c3f9178ae6857a6d7f69618d2f438217bdff7d
 
 
 def read_csv_file(filename, index_st):
@@ -76,6 +80,7 @@ if show_pressure_scan:
 show_G2G4_scan = False
 if show_G2G4_scan:
 	print "G2_V_06[i_exp3] ",G2_V_06[i_exp3]
+<<<<<<< HEAD
 	
 	fit_G2 = np.polyfit(G2_V_06[i_exp3], sig_peak_06[i_exp3],1)
 	fitp_G2 = np.poly1d(fit_G2)
@@ -86,10 +91,15 @@ if show_G2G4_scan:
 	plt.subplot(211)
 	plt.plot(G2_V_06[i_exp3], sig_peak_06[i_exp3],'ko',markersize=8)
 	plt.plot(G2_V_06[i_exp3], fitp_G2(G2_V_06[i_exp3]),'k--',markersize=8)
+=======
+	plt.subplot(211)
+	plt.plot(G2_V_06[i_exp3], sig_peak		_06[i_exp3],'ko')
+>>>>>>> 38c3f9178ae6857a6d7f69618d2f438217bdff7d
 	plt.ylim(5,7.3)
 	plt.xlim(-105,-80)
 	plt.xlabel('G2 voltage [V]')
 	plt.ylabel('peak current [nA]')
+<<<<<<< HEAD
 	plt.axvline(x = -84,color='r')
 	#plt.ylim(ymin=0)
 	plt.subplot(212)
@@ -103,6 +113,16 @@ if show_G2G4_scan:
 	plt.savefig('170309_opt_ions/G2G4_scan.png')
 	plt.show()
 	sys.exit()
+=======
+	plt.subplot(212)
+	plt.plot(G4_V_06[i_exp4], sig_peak_06[i_exp4],'ko')
+	plt.xlim(450,580)
+	plt.ylim(6,7.3)
+	plt.xlabel('G4 voltage [V]')
+	plt.ylabel('peak current [nA]')
+	plt.savefig('G2G4_scan.png')
+	plt.show()
+>>>>>>> 38c3f9178ae6857a6d7f69618d2f438217bdff7d
 
 
 #7/3/17 data (Pressure 4.4x10^-7 mbar)
@@ -237,9 +257,15 @@ plt.plot(eb_d_09[fwhm_indices_09][pres_09[fwhm_indices_09] == 1.1], fwhm_09[pres
 plt.ylim(ymin=0, ymax =130)
 plt.xlabel('ebeam duration (s)')
 plt.ylabel('FWHM [us]')
+<<<<<<< HEAD
 plt.savefig('170309_opt_ions/ebeam_dur1.png')
 plt.show()
 
+=======
+plt.savefig('ebeam_dur1.png')
+plt.show()
+sys.exit()
+>>>>>>> 38c3f9178ae6857a6d7f69618d2f438217bdff7d
 
 linfit_07 = linfit_create(eb_d_07,ion_num_const_FWHM_07,9,10)
 linfit_08 = linfit_create(eb_d_08,ion_num_const_FWHM_08,3,4)
@@ -262,7 +288,11 @@ plt.xlim(xmin=0)
 plt.xlabel('ebeam duration (s)')
 plt.ylabel(r'ion number (x10^6)')
 plt.legend(loc = 'lower right')
+<<<<<<< HEAD
 plt.savefig('170309_opt_ions/ebeam_dur2.png')
+=======
+plt.savefig('ebeam_dur2.png')
+>>>>>>> 38c3f9178ae6857a6d7f69618d2f438217bdff7d
 plt.show()
 
 #group overall results by pressure
@@ -270,6 +300,7 @@ pres = [1.1, 2.2, 4.4, 6.6]
 slopes = [linfit_09_2[1], linfit_08[1], linfit_07[1], linfit_09_1[1]]
 plateau = [plateau_09_2, plateau_08, plateau_07,plateau_09_1]
 
+<<<<<<< HEAD
 #plt.subplot(211)
 plt.plot(pres, slopes,'ko-',markersize=8)
 plt.ylabel('stored ion production rate (Mions/s)')	
@@ -279,6 +310,15 @@ plt.xlabel('pressure [x1e-7 mbar]')
 #plt.ylabel('ion plateau (Mions/s)')
 plt.ylim(ymin=0)
 plt.savefig('170309_opt_ions/rates.png')
+=======
+plt.subplot(211)
+plt.plot(pres, slopes,'ko-')
+plt.ylabel('stored ion production rate (Mions/s)')
+plt.subplot(212)
+plt.plot(pres, plateau,'ko-')
+plt.xlabel('pressure [x1e-7 mbar]')
+plt.ylabel('ion plateau (Mions/s)')
+>>>>>>> 38c3f9178ae6857a6d7f69618d2f438217bdff7d
 plt.show()
 
 plt.plot(pressure, e_fc_uA,'ko-') #31/1/17 data

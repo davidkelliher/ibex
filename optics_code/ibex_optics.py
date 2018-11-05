@@ -15,7 +15,7 @@ thinlens_drift = lambda t: np.matrix([[1,t],[0,1]])
 class optics(object):
 	"""Setup waveform and calculate optics for IBEX"""
 	
-	def __init__(self,  npts=1000, lat_type = "sinusoid", f_rf = 1):
+	def __init__(self,  npts=1000, lat_type = "sinusoid", f_rf = 1, r0 = 5e-3):
 		#self.V0 = V0
 		self.npts = npts
 		#coef = 2*qm_proton/(A_Ar*(r0*c)**2)
@@ -33,8 +33,8 @@ class optics(object):
 		
 		coef = 2*qm_proton/(A_Ar*(r0*self.c)**2)
 		return coef
-		
-	def transfer_matrix(self, kp, del_s, thinlens=False):
+
+	def transfer_matrix(self, kp_x, kp_y, del_s, thinlens=False, kdc = None):
 		"""For waveform kp, calculate transfer matrix of period"""
 		index_k = 0
 		
@@ -46,21 +46,21 @@ class optics(object):
 		R12_v = []
 		R21_v = []
 		R22_v = []
-		
-		for k in kp:
+			
+		for kx, ky in zip(kp_x, kp_y):
 			if isinstance(del_s,list):
 				dt = del_s[index_k]
 			else:
 				dt = del_s
 						
 			if not thinlens:
-				if k > 0:
-					mat_h = transfer_mat_F(k**0.5, dt)
-					mat_v = transfer_mat_D(k**0.5, dt)
-				elif k < 0:
-					mat_h = transfer_mat_D(abs(k)**0.5, dt)
-					mat_v = transfer_mat_F(abs(k)**0.5, dt)
-				elif k == 0:
+				if kx > 0:
+					mat_h = transfer_mat_F(abs(kx)**0.5, dt)
+					mat_v = transfer_mat_D(abs(ky)**0.5, dt)
+				elif kx < 0:
+					mat_h = transfer_mat_D(abs(kx)**0.5, dt)
+					mat_v = transfer_mat_F(abs(ky)**0.5, dt)
+				elif kx == 0:
 					mat_h = thinlens_drift(dt)
 					mat_v = mat_h
 			else:
@@ -79,8 +79,10 @@ class optics(object):
 					mat_v = mat_h
 				
 			if index_k == 0:
+				
 				mat_period_h = mat_h
 				mat_period_v = mat_v
+					
 				R = np.array(mat_period_h)
 			else:		
 				mat_period_h = np.dot(mat_h, mat_period_h)
@@ -115,6 +117,7 @@ class optics(object):
 		
 		return mat_period_h, mat_period_v, R_matrix_h, R_matrix_v
 		
+		
 	def tune_calc(self, mat):
 		"""Calculate tune from transfer matrix"""
 		
@@ -137,20 +140,22 @@ class optics(object):
 			self.va = self.v0*np.sin(2*math.pi*self.ta)
 			
 		return self.ta, self.va
-		
+
 	def calc_transfer_matrix(self):
 		"""Read waveform from construct_waveform, convert of focusing waveform ka and calculate transfer matrix"""
 		
 		ta, va = self.construct_waveform() #read time and voltage of waveform
-		
+
 		coef = self.coef_calc()
-		ka = coef*va #convert to array of quadrupole strengths, ka
 		
+		kx_a = coef*(self.u0 - va) #convert to array of quadrupole strengths, ka
+		ky_a = coef*(self.u0 + va)
+	
 		del_s = (self.c/(self.f_rf*1e6))*(ta[1]-ta[0]) #convert time increment to distance increment c*dt
-		self.transferh, self.transferv, self.R_matrix_h, self.R_matrix_v = self.transfer_matrix(ka, del_s, thinlens=False)
+		self.transferh, self.transferv, self.R_matrix_h, self.R_matrix_v = self.transfer_matrix(kx_a, ky_a, del_s, thinlens=False)
 		
 		return self.transferh, self.transferv, self.R_matrix_h, self.R_matrix_v
-		
+				
 		
 	def optics_periodic(self, mat, mu):
 		"""Calculate initial beta, alpha and gamma from periodic transfer matrix (i.e. at start and end of periodic cell"""
@@ -177,23 +182,26 @@ class optics(object):
 		
 		return alpha_p, beta_p, gamma_p
 	
-	
-	def voltage_to_tune(self, v0):
+
+	def voltage_to_tune(self, v0, u0=0):
 		"""Calculate tune for a given RF voltage. The frequency is assumed to be 1 MHz"""
 		
 		self.v0 = v0
+		self.u0 = u0
 		
 		self.calc_transfer_matrix()
 		self.tuneh = self.tune_calc(self.transferh)
 		self.tunev = self.tune_calc(self.transferv)
+		
 	
 		return self.tuneh, self.tunev
 		
-	def frequency_voltage_to_tune(self, f_rf_in, v0_in):
+	def frequency_voltage_to_tune(self, f_rf, v0, u0=0):
 		"""Calculate tune for a given RF frequency and given tune"""
 		
-		self.v0 = v0_in
-		self.f_rf = f_rf_in
+		self.v0 = v0
+		self.u0 = u0
+		self.f_rf = f_rf
 		
 		self.calc_transfer_matrix()
 		self.tuneh = self.tune_calc(self.transferh)
@@ -202,10 +210,11 @@ class optics(object):
 		return self.tuneh, self.tunev
 		
 		
-	def voltage_to_optics_periodic(self, v0):
+	def voltage_to_optics_periodic(self, v0, u0=0):
 		"""Calculate periodic optics for a given voltage"""
 		
 		self.v0 = v0
+		self.u0 = u0
 		
 		self.transferh, self.transferv, _, _ = self.calc_transfer_matrix()
 		self.tuneh = self.tune_calc(self.transferh)
@@ -230,11 +239,11 @@ class optics(object):
 		return self.alphah, self.betah, self.gammah, self.alphav, self.betav, self.gammav
 
 		
-	def voltage_to_optics_profile(self, v0):
+	def voltage_to_optics_profile(self, v0, u0=0):
 		"""First calculate periodic optics. Then calculate the optics throughout the lattice using the periodic optics as the initial condition"""
 		
 		#calculate periodic optics
-		self.voltage_to_optics_periodic(v0)
+		self.voltage_to_optics_periodic(v0, u0)
 		
 		if self.alphah != None:
 			self.alphah_p, self.betah_p, self.gammah_p = self.optics_profile(self.R_matrix_h, self.alphah, self.betah, self.gammah)

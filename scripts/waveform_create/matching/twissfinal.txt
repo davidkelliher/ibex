@@ -1,0 +1,55 @@
+@ NAME             %05s "TWISS"
+@ TYPE             %05s "TWISS"
+@ SEQUENCE         %08s "BEAMLINE"
+@ PARTICLE         %08s "POSITRON"
+@ MASS             %le     0.0005109989461
+@ CHARGE           %le                   1
+@ ENERGY           %le                   1
+@ PC               %le        0.9999998694
+@ GAMMA            %le         1956.951198
+@ KBUNCH           %le                   1
+@ BCURRENT         %le                   0
+@ SIGE             %le               0.001
+@ SIGT             %le                   1
+@ NPART            %le                   0
+@ EX               %le                   1
+@ EY               %le                   1
+@ ET               %le               0.001
+@ LENGTH           %le          899.377374
+@ ALFA             %le                   0
+@ ORBIT5           %le                  -0
+@ GAMMATR          %le                   0
+@ Q1               %le        0.4155756704
+@ Q2               %le        0.4088028362
+@ DQ1              %le                   0
+@ DQ2              %le                   0
+@ DXMAX            %le                   0
+@ DYMAX            %le                   0
+@ XCOMAX           %le                   0
+@ YCOMAX           %le                   0
+@ BETXMAX          %le         1023.598123
+@ BETYMAX          %le         466.2740125
+@ XCORMS           %le                   0
+@ YCORMS           %le                   0
+@ DXRMS            %le                   0
+@ DYRMS            %le                   0
+@ DELTAP           %le                   0
+@ SYNCH_1          %le                   0
+@ SYNCH_2          %le                   0
+@ SYNCH_3          %le                   0
+@ SYNCH_4          %le                   0
+@ SYNCH_5          %le                   0
+@ TITLE            %08s "no-title"
+@ ORIGIN           %18s "5.03.07 Windows 64"
+@ DATE             %08s "16/02/18"
+@ TIME             %08s "15.53.09"
+* NAME                                S               BETX               BETY               ALFX               ALFY 
+$ %s                                %le                %le                %le                %le                %le 
+ "BEAMLINE$START"                     0        425.8687752        425.8687752       -1.498914754        1.498914754
+ "QF1"                       149.896229        556.3504882        349.4722754       0.8648231913      -0.8644178839
+ "QD1"                       299.792458        1023.598123        273.6020635        -5.03867132        1.172020867
+ "QF2"                       449.688687        841.5728322        428.7201872        5.568509282       -2.682597587
+ "QD2"                       599.584916        382.0992309        466.2740125       -1.021177881        2.582358422
+ "QF3"                       749.481145        193.7076943         373.576449        1.574177007       -1.681163308
+ "QD3"                       899.377374         234.376644        234.3766438       -1.988559737        1.988559622
+ "BEAMLINE$END"              899.377374         234.376644        234.3766438       -1.988559737        1.988559622

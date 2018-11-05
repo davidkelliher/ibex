@@ -15,7 +15,6 @@ plt.rcParams.update({'axes.labelsize':20})
 plt.rcParams.update({'xtick.labelsize':14})
 plt.rcParams.update({'ytick.labelsize':14})
 
-
 charge = 1.602176565e-19
 mass_proton = 1.672621777e-27
 qm_proton = charge/mass_proton
@@ -25,7 +24,6 @@ omega_rf = 2*math.pi*f_rf_MHz*1e6
 r0 = 5e-3
 	
 op = ibex_optics.optics(f_rf=f_rf_MHz, npts=1000)
-
 
 nv = 40
 nu = nv
@@ -38,8 +36,6 @@ q_a = qfn(qm_proton/A_Ar, r0, omega_rf, v_a)
 a_a = afn(qm_proton/A_Ar, r0, omega_rf, u_a)
 
 show_aq = True
-
-um, vm  = np.meshgrid(u_a, v_a)
 
 stability_a = []
 index_row = 0

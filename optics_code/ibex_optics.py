@@ -148,7 +148,7 @@ class optics(object):
 
 		coef = self.coef_calc()
 		
-		kx_a = coef*(self.u0 - va) #convert to array of quadrupole strengths, ka
+		kx_a = coef*(-self.u0 - va) #convert to array of quadrupole strengths, ka
 		ky_a = coef*(self.u0 + va)
 	
 		del_s = (self.c/(self.f_rf*1e6))*(ta[1]-ta[0]) #convert time increment to distance increment c*dt

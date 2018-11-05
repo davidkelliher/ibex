@@ -7,8 +7,9 @@ import numpy as np
 #from scipy.interpolate import interp1d
 from scipy.optimize import newton
 
-git_dir = '/home/pvq65952/accelerators/ibex/simul/ibex/optics_code'
-sys.path.insert(0,git_dir)
+
+#git_dir = '/Users/pvq65952/accelerators/ibex/ibex-git/optics_code'
+#sys.path.insert(0,git_dir)
 import ibex_optics
 
 op = ibex_optics.optics(f_rf=1.0, npts=1000)

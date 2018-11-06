@@ -20,7 +20,7 @@ opt_method =  'Nelder-Mead' #'L-BFGS-B' also good
 calc_tune_to_voltage = True
 
 scan_equaltunes = False
-ntune = 10
+ntune = 5
 if scan_equaltunes:
 	nu_x_goal = np.linspace(0.01,0.45,ntune)
 	nu_y_goal = nu_x_goal
@@ -31,6 +31,9 @@ else:
 v_out_l = []
 u_out_l = []
 opt_time_l = []
+nu_x_out = []
+nu_y_out = []
+resid_tune_l = []
 if calc_tune_to_voltage:
 	#for a given set of desired cell tunes, find the corresponding voltages
 
@@ -83,14 +86,18 @@ if calc_tune_to_voltage:
 		#print "optimisation time ",time1-time0
 		#print "result ",res
 		
+		tune_out = op.voltage_to_tune(v_out,u_out)
+		nu_x_out.append(tune_out[0])
+		nu_y_out.append(tune_out[1])
+		resid_tune = ((tune_out[0] - nugx)**2 + (tune_out[1] - nugy)**2)**0.5
 		
+		resid_tune_l.append(resid_tune)
 		if check_result:
 			print "goal tunes ",nugx, nugy
-			tune_out = op.voltage_to_tune(v_out,u_out)
 			print "tunes at solution voltages ",tune_out
 			
 			
-			resid_tune = ((tune_out[0] - nugx)**2 + (tune_out[1] - nugy)**2)**0.5
+			
 			
 			print "resid_tune ",resid_tune
 			
@@ -99,6 +106,8 @@ if calc_tune_to_voltage:
 		i1 = i1 + 1
 
 
+nu_x_diff = [nux1 - nux2 for nux1,nux2 in zip(nu_x_out, nu_x_goal)]
+nu_y_diff = [nux1 - nux2 for nux1,nux2 in zip(nu_y_out, nu_y_goal)]
 if scan_equaltunes:
 	plt.subplot(211)
 	plt.plot(nu_x_goal, v_out_l, 'ko-')
@@ -109,7 +118,7 @@ else:
 	plt.subplot(311)
 	plt.plot(nu_y_goal, v_out_l, 'ko-')
 	plt.ylabel('V0 [V]')
-	plt.title('nu_x = '+str(nu_x_goal[0]))
+	plt.title('horizontal cell tune = '+str(nu_x_goal[0]))
 	plt.xlim(nu_y_goal[0], nu_y_goal[-1])
 	plt.subplot(312)
 	plt.plot(nu_y_goal, u_out_l, 'ro-')
@@ -122,15 +131,18 @@ if scan_equaltunes:
 else:
 	plt.subplot(313)
 	
-plt.plot(nu_y_goal, opt_time_l, 'ko-')
-plt.ylabel('optimisation time (s)')
+#plt.plot(nu_y_goal, nu_x_goal, 'ko-')
+plt.plot(nu_y_goal, resid_tune_l, 'ko-')
+
+#plt.ylabel('optimisation time (s)')
+plt.ylabel(r'$\sqrt{\Delta \nu_x^2 + \Delta \nu_y^2}$')
 plt.xlim(nu_y_goal[0], nu_y_goal[-1])
-plt.ylim(ymin=0)
+#plt.ylim(ymin=0)
 if scan_equaltunes:
 	plt.xlabel('cell tune (x,y)')
 	plt.savefig('tunescan_equal')
 else:
-	plt.xlabel('cell tune y')
+	plt.xlabel('vertical cell tune')
 	plt.savefig('tunescan_unequal')
 plt.show()
 

@@ -47,8 +47,7 @@ for u0 in u_a:
 	for v, q in zip(v_a, q_a):
 	
 		res_h, res_v = op.voltage_to_tune(v0=v, u0 = u0)
-		
-		#print "u0, res_h, res_v ",u0, res_h, res_v
+
 		if res_h != None and res_v != None:
 			if show_aq:
 				plt.plot([q],[a],'ko')

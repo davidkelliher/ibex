@@ -232,6 +232,7 @@ class Waveforms(object):
     def  create_ramping_waveforms(self, seg, rods, phase, pert):
 
         if self.Type == 'FC' and rods == 2:
+            print "halving FC rod voltage?"
             v0_array = self.v0_array/2
             accum_voltage = self.accum_voltage /2
         else:
@@ -241,7 +242,6 @@ class Waveforms(object):
         for j in range(len(self.v0_array)):
 
             if pert[3] == 0:
-
                 outfile = open(self.Type + str(rods) + '_seg_' + str(seg) + '_' + str(j) + '.csv', 'w')
             else:
 
@@ -250,23 +250,32 @@ class Waveforms(object):
                 else:
                     outfile = open(self.Type + str(rods) + '_seg_' + str(seg) + '_' + str((2*(j+1)) - 1) + '.csv', 'w')
                     
-            voltage = []
-            number = []
+            
+            nc_ramp = int(self.Seg_len * self.Ramp_periods)
+            number = range(nc_ramp)
 
-            for i in range(int(self.Seg_len * self.Ramp_periods)):
-                number.append(i)
+            v0_slope = (v0_array[j]-accum_voltage)/nc_ramp
+            u0_slope = self.u0_array[j]/nc_ramp
 
+            if rods == "13":
+                pol = 1        
+            else:
+                pol = -1
 
-            for l in range(int(self.Ramp_periods)):
-                for i in range(self.Seg_len):
-                    if rods == "13":
-                        voltage.append((((((v0_array[j]-accum_voltage)*((l*self.Seg_len) + i))/(self.Ramp_periods * self.Seg_len)) + accum_voltage)
-                         * np.sin((i * 2 * np.pi / self.Seg_len)+ phase))/self.Amp_gain[self.Type+rods] + self.Offset/self.DC_gain)
-                    else:
-                        voltage.append((((((v0_array[j]-accum_voltage)*((l*self.Seg_len) + i))/(self.Ramp_periods * self.Seg_len)) + accum_voltage)
-                         * -1 * np.sin((i * 2 * np.pi / self.Seg_len)+ phase))/self.Amp_gain[self.Type+rods] + self.Offset/self.DC_gain)
+            rf_voltage = []
+            dc_voltage = []
+            for ic in range(nc_ramp):
+                rf_voltage.append(((v0_slope*ic + accum_voltage)* pol*np.sin((ic * 2 * np.pi / self.Seg_len)+ phase))/self.Amp_gain[self.Type+rods] + self.Offset/self.DC_gain)
+                dc_voltage.append((pol*(u0_slope*ic) + self.Offset)/self.DC_gain)
 
-            voltage = np.array(voltage)
+            rf_voltage = np.array(rf_voltage)
+            dc_voltage = np.array(dc_voltage)
+            voltage = rf_voltage + dc_voltage
+            
+            #plt.plot(rf_voltage)
+            #plt.plot(dc_voltage)
+            #plt.show()
+            
             v_bits = voltage * (self.Max_bits / self.Awg_gain)
 
             writer = csv.writer(outfile, lineterminator='\n')
@@ -281,18 +290,23 @@ class Waveforms(object):
     def create_final_tune_waveforms(self, seg, rods, phase, dc_offset, pert):
 
         if self.Type == 'FC' and rods == 2:
+            print "halving FC rod voltage?"
             v0_array = self.v0_array/2
         else:
             v0_array = self.v0_array
 
         print "seg, final dc offset: ",seg, self.Offset
 
+        if rods == "13":
+            pol = 1        
+        else:
+            pol = -1
+                
         for j in range(len(self.v0_array)): 
 
             if pert[3] == 0:
 
                 outfile = open(self.Type + str(rods) + '_seg_' + str(seg) + '_' + str(j) + '.csv', 'w')
-
 
             else:
 
@@ -303,48 +317,30 @@ class Waveforms(object):
 
                         
             voltage = []
-            number = []
 
             if seg == 3 and self.Type == 'CROD' and pert[4]== 0.0:
-                #print 'yes!'
-    #                for i in range(int(pert[2] * self.Seg_len *(1e6/pert[0]))):
+                
+                number = range(int(pert[2] * self.Seg_len))
+                
                 for i in range(int(pert[2] * self.Seg_len)):
-                    number.append(i)
-                if rods == "13":
-                    for i in range(int(pert[2] * self.Seg_len)):
-                        voltage.append((v0_array[j] * np.sin((i *  2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods]) +
-                                       (pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
-                            self.Type + rods]) + (dc_offset/self.DC_gain))
-                else:
-                    for i in range(int(pert[2] * self.Seg_len)):
-                        voltage.append((-1 * v0_array[j] * np.sin((i * 2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods]) -
-                                       (pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
-                            self.Type + rods]) + (dc_offset/self.DC_gain))
+                    voltage.append((pol*v0_array[j] * np.sin((i *  2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods]) +
+                            (pol*pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
+                            self.Type + rods]) + (dc_offset+pol*self.u0_array[j])/self.DC_gain)
+
 
             elif pert[4] != 0.0 and seg ==4 and self.Type == 'CROD':
+                
+                number = range(int(pert[2] * self.Seg_len))
+                
                 for i in range(int(pert[2] * self.Seg_len)):
-                    number.append(i)
-                if rods == "13":
-                    for i in range(int(pert[2] * self.Seg_len)):
-                        voltage.append((v0_array[j] * np.sin((i *  2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods]) +
-                                       (pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
-                            self.Type + rods]) + (dc_offset/self.DC_gain))
-                else:
-                    for i in range(int(pert[2] * self.Seg_len)):
-                        voltage.append((-1 * v0_array[j] * np.sin((i * 2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods]) -
-                                       (pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
-                            self.Type + rods]) + (dc_offset/self.DC_gain))
-
+                     voltage.append((pol*v0_array[j] * np.sin((i *  2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods]) +
+                            (pol*pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
+                            self.Type + rods]) + (dc_offset+pol*self.u0_array[j])/self.DC_gain)
 
             else:
+                number = range(self.Seg_len)
                 for i in range(self.Seg_len):
-                    number.append(i)
-                if rods == "13":
-                    for i in range(self.Seg_len):
-                        voltage.append(v0_array[j] * np.sin((i *  2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods] + (dc_offset/self.DC_gain))
-                else:
-                    for i in range(self.Seg_len):
-                        voltage.append(-1 * v0_array[j] * np.sin((i * 2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods] + (dc_offset/self.DC_gain))
+                    voltage.append(pol*v0_array[j] * np.sin((i *  2 * np.pi / self.Seg_len)+ phase) /self.Amp_gain[self.Type+rods] + (dc_offset+pol*self.u0_array[j])/self.DC_gain)
 
 
             voltage = np.array(voltage)
@@ -469,6 +465,11 @@ class Waveforms(object):
 
     def create_perturbing_waveform(self, seg, rods, phase, pert):
 
+        if rods == "13":
+            pol = 1        
+        else:
+            pol = -1
+            
         for j in range(len(self.v0_array)):
 
             if pert[1] == 0.0:
@@ -476,24 +477,17 @@ class Waveforms(object):
             else:
                 outfile = open(self.Type + str(rods) + '_seg_' + str(seg) + '_' + str((2*(j+1)) - 1) + '.csv', 'w')
             voltage = []
-            number = []
+            number = range(int(self.Seg_len *(1e6/pert[0])))
 
-            
-            for i in range(int(self.Seg_len *(1e6/pert[0]))):
-                number.append(i)
 
             print "rods in gate drop ", rods
             print "seg, self.Offset_drop ", seg, self.Offset_drop
-            if rods == "13":
-                for i in range(int(self.Seg_len * (1e6/pert[0]))):
-                    voltage.append(
-                        pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
-                            self.Type + rods] + self.Offset/self.DC_gain)
-            else:
-                for i in range(int(self.Seg_len * (1e6/pert[0]))):
-                    voltage.append(
-                        -1 * pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
-                            self.Type + rods] + self.Offset/self.DC_gain)
+ 
+            for i in range(int(self.Seg_len * (1e6/pert[0]))):
+                voltage.append(
+                    pol*pert[1] * np.sin((i * 2 * np.pi / (self.Seg_len / (pert[0]/1e6))) + phase) / self.Amp_gain[
+                    self.Type + rods] + (self.Offset+pol*self.u0_array[j])/self.DC_gain)
+
 
 
             # convert amplifier voltage to AWG bits

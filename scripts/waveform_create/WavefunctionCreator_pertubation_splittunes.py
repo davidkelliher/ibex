@@ -5,7 +5,6 @@
 
 from __future__ import division
 from functions_pertubation_splittunes import *
-import numpy as np
 
 # Enter desired parameters:
 
@@ -29,6 +28,7 @@ seg_len = 100
 
 # how many rods are powered 2 or 4?
 rods_powered = 4
+
 # pertubation? [freq, amp, rf periods, with or without alternate measurements, with or without wait]
 # for with or without alternate measurements, use 0 if you dont also want to run without a perturbation,
 # use 1 if you will also run without perturbation
@@ -108,13 +108,16 @@ else:
     #import ibex_optics_pert
     #import ibex_optics_181109# (this will allow split tunes - to be tested here)
     #op = ibex_optics_pert.optics(f_rf=1.0, npts=1000)
-   
+
+    print "calculate accumulation voltage"
     accumulation_voltage, _, _ = tune_to_voltages(accumulation_tune, accumulation_tune)
     
     tune_x_a = np.linspace(initial_tune_x, final_tune_x, tune_points)
     tune_y_a = np.linspace(initial_tune_y, final_tune_y, tune_points)
     
     print "tune_x array ",tune_x_a
+    print "tune_y array ",tune_y_a
+    
     v0_array = []
     u0_array = []
     tune_x_out = []
@@ -131,7 +134,7 @@ else:
     print "DC voltages ",u0_array
 
     v0_array = np.array(v0_array)
-    u0_array =  np.array(u0_array)
+    u0_array = np.array(u0_array)
     
     if tune_points > 1:
         plt.subplot(211)
